@@ -1,77 +1,97 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { createJob } from "@/lib/jobs";
 
 export default function NewJobPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const date = new Date();
+  const formattedDate = date.toLocaleDateString();
   const [formData, setFormData] = useState({
     title: "",
     department: "",
     location: "",
     description: "",
     requirements: "",
+    matched: 0,
+    applicants: 0,
+    status: "",
     isActive: true,
-  })
+    postedDate: formattedDate,
+    matchedCandidates: 0
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSwitchChange = (checked: boolean) => {
-    setFormData((prev) => ({ ...prev, isActive: checked }))
-  }
+    setFormData((prev) => ({ ...prev, isActive: checked }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await createJob(formData);
 
       toast({
         title: "Job created",
         description: "Your job posting has been created successfully.",
-      })
+      });
 
-      router.push("/dashboard/jobs")
+      router.push("/dashboard/jobs");
     } catch (error) {
       toast({
         title: "Error",
         description: "There was an error creating the job posting.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Create New Job</h1>
-        <p className="text-muted-foreground">Fill in the details to create a new job posting</p>
+        <p className="text-muted-foreground">
+          Fill in the details to create a new job posting
+        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
             <CardTitle>Job Details</CardTitle>
-            <CardDescription>Enter the basic information about the job position</CardDescription>
+            <CardDescription>
+              Enter the basic information about the job position
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -138,7 +158,11 @@ export default function NewJobPage() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="isActive" checked={formData.isActive} onCheckedChange={handleSwitchChange} />
+              <Switch
+                id="isActive"
+                checked={formData.isActive}
+                onCheckedChange={handleSwitchChange}
+              />
               <Label htmlFor="isActive">Publish job immediately</Label>
             </div>
           </CardContent>
@@ -165,6 +189,5 @@ export default function NewJobPage() {
         </Card>
       </form>
     </div>
-  )
+  );
 }
-

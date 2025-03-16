@@ -1,15 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Calendar, Users, FileText, MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Plus,
+  Calendar,
+  Users,
+  FileText,
+  MoreHorizontal,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getJobs } from "@/lib/jobs";
 
 // Mock data - in a real app, this would come from your API
 const mockJobs = [
@@ -63,36 +89,59 @@ const mockJobs = [
     applicants: 32,
     matchedCandidates: 10,
   },
-]
+];
+
+type Job = {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  description: string;
+  requirements: string;
+  matched: number;
+  applicants: number;
+  status: string;
+  isActive: boolean;
+  postedDate: string;
+  matchedCandidates: number;
+};
 
 export default function JobsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [jobs, setJobs] = useState<typeof mockJobs>([])
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
   useEffect(() => {
-    // Simulate API loading
-    const timer = setTimeout(() => {
-      setJobs(mockJobs)
-      setLoading(false)
-    }, 1000)
+    const fetchJobs = async () => {
+      try {
+        const jobsData = await getJobs();
+        setJobs(jobsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer)
-  }, [])
+    fetchJobs();
+  }, []);
 
   const filteredJobs = jobs.filter(
     (job) =>
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      (job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+      (job.department?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false) ||
+      (job.location?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Jobs</h1>
-          <p className="text-muted-foreground">Manage your job postings and view applicants</p>
+          <p className="text-muted-foreground">
+            Manage your job postings and view applicants
+          </p>
         </div>
         <Button asChild>
           <Link href="/dashboard/jobs/new">
@@ -104,7 +153,9 @@ export default function JobsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Job Listings</CardTitle>
-          <CardDescription>View and manage all your job postings</CardDescription>
+          <CardDescription>
+            View and manage all your job postings
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex items-center gap-2">
@@ -160,14 +211,21 @@ export default function JobsPage() {
                     filteredJobs.map((job) => (
                       <TableRow key={job.id}>
                         <TableCell className="font-medium">
-                          <Link href={`/dashboard/jobs/${job.id}`} className="hover:text-brand-600 hover:underline">
+                          <Link
+                            href={`/dashboard/jobs/${job.id}`}
+                            className="hover:text-brand-600 hover:underline"
+                          >
                             {job.title}
                           </Link>
                         </TableCell>
                         <TableCell>{job.department}</TableCell>
                         <TableCell>{job.location}</TableCell>
                         <TableCell>
-                          <Badge variant={job.status === "active" ? "default" : "secondary"}>
+                          <Badge
+                            variant={
+                              job.status === "active" ? "default" : "secondary"
+                            }
+                          >
                             {job.status === "active" ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
@@ -199,13 +257,21 @@ export default function JobsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/jobs/${job.id}`}>View Details</Link>
+                                <Link href={`/dashboard/jobs/${job.id}`}>
+                                  View Details
+                                </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/jobs/${job.id}/edit`}>Edit Job</Link>
+                                <Link href={`/dashboard/jobs/${job.id}/edit`}>
+                                  Edit Job
+                                </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/jobs/${job.id}/candidates`}>View Candidates</Link>
+                                <Link
+                                  href={`/dashboard/jobs/${job.id}/candidates`}
+                                >
+                                  View Candidates
+                                </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -220,6 +286,5 @@ export default function JobsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
